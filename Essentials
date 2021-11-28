@@ -1,0 +1,63 @@
+BeginPackage["Essentials`"];
+
+ (***** BEGIN PUBLIC *****)
+
+symbolQ::usage = "Returns True if expr is a Symbol else False.";
+
+rowNameValue::usage = 
+  "Creates a Grid or Row list of {name \[Rule], value} pairs. Perfect \
+for showing calculation steps in a Grid or other structured outputs.";
+
+echo::usage = 
+  "Invoke Echo with a generated label from symbolName, expression, or \
+a given string. Only use for development as this function has not \
+been fully tested.";
+
+FreshStart::usage = "Clears history with resets of In/Out, reset \
+$Line = n (default n = 1); limits $HistoryLength (default len = 12). \
+Options (with defaults): ClearSystemCache (True), NotebookSave \
+(True), get SystemInformation (False), view running SystemProcesses \
+(False), Remove@\"Globals`*\" (False), Quit (False). All Options \
+default values can be conveniently set by editing Public symbol \
+Essentials`FreshOps (not Locked)."
+
+FreshOps::usage = 
+  "Sets default Options for FreshStart. Stored in Public section of \
+package file (not Locked). Defaults are reset with each kernel \
+restart.";
+
+(* DO NOT EDIT HERE *)
+FreshOps = 
+  Sequence[clearcache -> True, save -> True, sysinfo -> False, 
+   processes -> False, globals -> False, quit -> False];
+SetAttributes[FreshOps, {Protected}];
+
+(***** BEGIN PRIVATE *****)
+Begin["`Private`"];
+
+symbolQ[_Symbol] := True;
+symbolQ[_] := False;
+SetAttributes[symbolQ, Protected];
+
+SetAttributes[rowNameValue, HoldFirst];
+rowNameValue[s_, n_String] := {n <> " \[Rule] ", s};
+rowNameValue[s_] := {ToString@HoldForm@s <> " \[Rule] ", s};
+SetAttributes[rowNameValue, Protected];
+
+SetAttributes[echo, HoldFirst];
+echo[s_, t_String] := Echo@Row[{t, "\[Rule]", s}, Spacer[1]];
+echo[s_] := Echo@Row[{HoldForm@s, "\[Rule]", s}, Spacer[1]];
+SetAttributes[echo, Protected];
+
+Options[FreshStart] = {FreshOps};
+** ** **
+   
+   findcells = Cells[CellStyle -> "Input"];
+cellopsargs = Sequence[from = "Input", to = "Code", findcells];
+replaceCellOps[from_, to_, cells_] := 
+  NotebookWrite[#, Replace[NotebookRead[#], from -> to, All]] & /@ 
+   cells;
+SetAttributes[replaceCellOps, Protected];
+
+End[];
+EndPackage[];
